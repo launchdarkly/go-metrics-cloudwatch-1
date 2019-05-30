@@ -1,0 +1,12 @@
+version: 2
+
+jobs:
+  build:
+    working_directory: /go/src/github.com/launchdarkly/go-metrics-cloudwatch
+    docker:
+      - image: circleci/golang
+    steps:
+      - checkout
+      - run: go get -u github.com/golang/dep/cmd/dep
+      - run: dep ensure -dry-run
+      - run: go test ./...
