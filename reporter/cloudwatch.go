@@ -7,8 +7,8 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
-	metrics "github.com/rcrowley/go-metrics"
-	"github.com/sclasen/go-metrics-cloudwatch/config"
+	metrics "github.com/launchdarkly/go-metrics"
+	"github.com/launchdarkly/go-metrics-cloudwatch/config"
 )
 
 var Silence = false
@@ -20,12 +20,12 @@ func Cloudwatch(registry metrics.Registry, cfg *config.Config) {
 	for {
 		select {
 		case <-ticks.C:
-			emitMetrics(registry, cfg)
+			EmitMetrics(registry, cfg)
 		}
 	}
 }
 
-func emitMetrics(registry metrics.Registry, cfg *config.Config) {
+func EmitMetrics(registry metrics.Registry, cfg *config.Config) {
 	data := metricsData(registry, cfg)
 
 	//20 is the max metrics per request
@@ -50,11 +50,11 @@ func putMetrics(cfg *config.Config, data []*cloudwatch.MetricDatum) {
 	_, err := client.PutMetricData(req)
 	if err != nil {
 		if !Silence {
-			log.Printf("component=cloudwatch-reporter fn=emitMetrics at=error error=%s", err)
+			log.Printf("component=cloudwatch-reporter fn=EmitMetrics at=error error=%s", err)
 		}
 	} else {
 		if !Silence {
-			log.Printf("component=cloudwatch-reporter fn=emitMetrics at=put-metrics count=%d", len(req.MetricData))
+			log.Printf("component=cloudwatch-reporter fn=EmitMetrics at=put-metrics count=%d", len(req.MetricData))
 		}
 	}
 }

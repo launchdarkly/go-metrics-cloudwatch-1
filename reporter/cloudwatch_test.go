@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
-	metrics "github.com/rcrowley/go-metrics"
-	"github.com/sclasen/go-metrics-cloudwatch/config"
+	metrics "github.com/launchdarkly/go-metrics"
+	"github.com/launchdarkly/go-metrics-cloudwatch/config"
 )
 
 type MockPutMetricsClient struct {
@@ -33,7 +33,7 @@ func TestCloudwatchReporter(t *testing.T) {
 		count.Inc(1)
 	}
 
-	emitMetrics(registry, cfg)
+	EmitMetrics(registry, cfg)
 
 	if mock.metricsPut < 30 || mock.requests < 2 {
 		t.Fatal("No Metrics Put")
@@ -51,7 +51,7 @@ func TestHistograms(t *testing.T) {
 	hist := metrics.GetOrRegisterHistogram(fmt.Sprintf("histo"), registry, metrics.NewUniformSample(1024))
 	hist.Update(1000)
 	hist.Update(500)
-	emitMetrics(registry, cfg)
+	EmitMetrics(registry, cfg)
 
 	if mock.metricsPut < len(filter.Percentiles("")) {
 		t.Fatal("No Metrics Put")
@@ -67,7 +67,7 @@ func TestTimers(t *testing.T) {
 	registry := metrics.NewRegistry()
 	timer := metrics.GetOrRegisterTimer(fmt.Sprintf("timer"), registry)
 	timer.Update(10 * time.Second)
-	emitMetrics(registry, cfg)
+	EmitMetrics(registry, cfg)
 
 	if mock.metricsPut < 7 {
 		t.Fatal("No Metrics Put")
@@ -83,7 +83,7 @@ func TestFilters(t *testing.T) {
 	registry := metrics.NewRegistry()
 	timer := metrics.GetOrRegisterTimer(fmt.Sprintf("timer"), registry)
 	timer.Update(10 * time.Second)
-	emitMetrics(registry, cfg)
+	EmitMetrics(registry, cfg)
 
 	if mock.metricsPut > 0 {
 		t.Fatal("Metrics Put")
