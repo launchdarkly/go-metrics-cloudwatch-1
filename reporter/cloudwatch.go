@@ -14,19 +14,19 @@ import (
 var Silence = false
 
 //blocks, run as go reporter.Cloudwatch(cfg)
-func Cloudwatch(registry metrics.Registry, cfg *config.Config) {
+func Cloudwatch(cfg *config.Config) {
 	ticks := time.NewTicker(cfg.ReportingInterval)
 	defer ticks.Stop()
 	for {
 		select {
 		case <-ticks.C:
-			EmitMetrics(registry, cfg)
+			EmitMetrics(cfg)
 		}
 	}
 }
 
-func EmitMetrics(registry metrics.Registry, cfg *config.Config) error {
-	data := metricsData(registry, cfg)
+func EmitMetrics(cfg *config.Config) error {
+	data := metricsData(cfg)
 	var err error
 	//20 is the max metrics per request
 	for len(data) > 20 {
@@ -55,7 +55,7 @@ func putMetrics(cfg *config.Config, data []*cloudwatch.MetricDatum) error {
 	return nil
 }
 
-func metricsData(registry metrics.Registry, cfg *config.Config) []*cloudwatch.MetricDatum {
+func metricsData(cfg *config.Config) []*cloudwatch.MetricDatum {
 	counters, gagues, histos, meters, timers := 0, 0, 0, 0, 0
 	countersOut, gaguesOut, histosOut, metersOut, timersOut := 0, 0, 0, 0, 0
 
@@ -70,7 +70,7 @@ func metricsData(registry metrics.Registry, cfg *config.Config) []*cloudwatch.Me
 		}
 	}
 	//rough port from the graphite reporter
-	registry.Each(func(name string, i interface{}) {
+	cfg.Registry.Each(func(name string, i interface{}) {
 		switch metric := i.(type) {
 		case metrics.Counter:
 			counters += 1

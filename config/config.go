@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
+	"github.com/launchdarkly/go-metrics"
 )
 
 const (
@@ -24,6 +25,7 @@ type Config struct {
 	Filter                Filter
 	Client                PutMetricsClient
 	ReportingInterval     time.Duration
+	Registry              metrics.Registry
 	Namespace             string
 	StaticDimensions      map[string]string
 	ResetCountersOnReport bool
