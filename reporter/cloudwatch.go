@@ -25,23 +25,24 @@ func Cloudwatch(registry metrics.Registry, cfg *config.Config) {
 	}
 }
 
-func EmitMetrics(registry metrics.Registry, cfg *config.Config) {
+func EmitMetrics(registry metrics.Registry, cfg *config.Config) error {
 	data := metricsData(registry, cfg)
-
+	var err error
 	//20 is the max metrics per request
 	for len(data) > 20 {
 		put := data[0:20]
-		putMetrics(cfg, put)
+		err = putMetrics(cfg, put)
 		data = data[20:]
 	}
 
 	if len(data) > 0 {
-		putMetrics(cfg, data)
+		err = putMetrics(cfg, data)
 	}
+	return err
 
 }
 
-func putMetrics(cfg *config.Config, data []*cloudwatch.MetricDatum) {
+func putMetrics(cfg *config.Config, data []*cloudwatch.MetricDatum) error {
 	client := cfg.Client
 	req := &cloudwatch.PutMetricDataInput{
 		Namespace:  aws.String(cfg.Namespace),
@@ -49,14 +50,9 @@ func putMetrics(cfg *config.Config, data []*cloudwatch.MetricDatum) {
 	}
 	_, err := client.PutMetricData(req)
 	if err != nil {
-		if !Silence {
-			log.Printf("component=cloudwatch-reporter fn=EmitMetrics at=error error=%s", err)
-		}
-	} else {
-		if !Silence {
-			log.Printf("component=cloudwatch-reporter fn=EmitMetrics at=put-metrics count=%d", len(req.MetricData))
-		}
+		return fmt.Errorf("component=cloudwatch-reporter fn=EmitMetrics at=error error=%s", err)
 	}
+	return nil
 }
 
 func metricsData(registry metrics.Registry, cfg *config.Config) []*cloudwatch.MetricDatum {
