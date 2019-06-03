@@ -11,8 +11,6 @@ import (
 	"github.com/launchdarkly/go-metrics-cloudwatch/config"
 )
 
-var Silence = false
-
 //blocks, run as go reporter.Cloudwatch(cfg)
 func Cloudwatch(cfg *config.Config) {
 	ticks := time.NewTicker(cfg.ReportingInterval)
@@ -176,7 +174,7 @@ func metricsData(cfg *config.Config) []*cloudwatch.MetricDatum {
 	})
 	total := counters + gagues + histos + meters + timers
 	totalOut := countersOut + gaguesOut + histosOut + metersOut + timersOut
-	if !Silence {
+	if cfg.Debug {
 		log.Printf("component=cloudwatch-reporter fn=metricsData at=sources total=%d counters=%d gagues=%d histos=%d meters=%d timers=%d", total, counters, gagues, histos, meters, timers)
 		log.Printf("component=cloudwatch-reporter fn=metricsData at=targets total=%d counters=%d gagues=%d histos=%d meters=%d timers=%d", totalOut, countersOut, gaguesOut, histosOut, metersOut, timersOut)
 	}
