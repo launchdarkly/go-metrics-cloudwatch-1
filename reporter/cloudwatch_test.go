@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
+
 	metrics "github.com/launchdarkly/go-metrics"
 	"github.com/launchdarkly/go-metrics-cloudwatch/config"
 )
@@ -38,6 +39,40 @@ func TestCloudwatchReporter(t *testing.T) {
 	EmitMetrics(cfg)
 
 	if mock.metricsPut < 30 || mock.requests < 2 {
+		t.Fatal("No Metrics Put")
+	}
+}
+
+func TestCounters(t *testing.T) {
+	mock := &MockPutMetricsClient{}
+	registry := metrics.NewRegistry()
+	cfg := &config.Config{
+		Client:   mock,
+		Filter:   &config.NoFilter{},
+		Registry: registry,
+	}
+	counter := metrics.GetOrRegisterCounter(fmt.Sprintf("counter"), registry)
+	counter.Inc(1)
+	EmitMetrics(cfg)
+
+	if mock.metricsPut < 1 {
+		t.Fatal("No Metrics Put")
+	}
+}
+
+func TestGaugeCounters(t *testing.T) {
+	mock := &MockPutMetricsClient{}
+	registry := metrics.NewRegistry()
+	cfg := &config.Config{
+		Client:   mock,
+		Filter:   &config.NoFilter{},
+		Registry: registry,
+	}
+	gaugeCounter := metrics.GetOrRegisterGaugeCounter(fmt.Sprintf("gauge-counter"), registry)
+	gaugeCounter.Dec(1)
+	EmitMetrics(cfg)
+
+	if mock.metricsPut < 1 {
 		t.Fatal("No Metrics Put")
 	}
 }
