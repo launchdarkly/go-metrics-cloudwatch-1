@@ -7,6 +7,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
+
 	metrics "github.com/launchdarkly/go-metrics"
 	"github.com/launchdarkly/go-metrics-cloudwatch/config"
 )
@@ -84,6 +85,20 @@ func metricsData(cfg *config.Config) []*cloudwatch.MetricDatum {
 			}
 			if cfg.ResetCountersOnReport {
 				metric.Clear()
+			}
+		case metrics.GaugeCounter:
+			// treat these like Counter
+			counters += 1
+			count := float64(metric.Count())
+			if cfg.Filter.ShouldReport(name, count) {
+				datum := aDatum(name)
+				datum.Unit = aws.String(cloudwatch.StandardUnitCount)
+				datum.Value = aws.Float64(count)
+				data = append(data, datum)
+				countersOut += 1
+			}
+			if cfg.ResetCountersOnReport {
+				metric.Dec(metric.Count()) // GaugeCounter doesn't have Clear()
 			}
 		case metrics.Gauge:
 			gagues += 1
