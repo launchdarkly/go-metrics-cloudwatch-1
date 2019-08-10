@@ -75,7 +75,7 @@ func metricsData(cfg *config.Config) []*cloudwatch.MetricDatum {
 		switch metric := i.(type) {
 		case metrics.Counter:
 			counters += 1
-			count := float64(metric.Count())
+			count := float64(metric.Clear().Count())
 			if cfg.Filter.ShouldReport(name, count) {
 				datum := aDatum(name)
 				datum.Unit = aws.String(cloudwatch.StandardUnitCount)
