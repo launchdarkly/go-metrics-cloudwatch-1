@@ -54,6 +54,9 @@ func TestCounters(t *testing.T) {
 	counter := metrics.GetOrRegisterCounter(fmt.Sprintf("counter"), registry)
 	counter.Inc(1)
 	EmitMetrics(cfg)
+	if counter.Count() != 0 {
+		t.Fatalf("expected counter to be cleared but got %d", counter.Count())
+	}
 
 	if mock.metricsPut < 1 {
 		t.Fatal("No Metrics Put")
