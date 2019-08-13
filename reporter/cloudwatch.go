@@ -75,7 +75,9 @@ func metricsData(cfg *config.Config) []*cloudwatch.MetricDatum {
 		switch metric := i.(type) {
 		case metrics.Counter:
 			counters += 1
-			count := float64(metric.Count())
+			// For the LD flavor of go-metrics we do an atomic snapshot and clear
+			// Caveat: we cannot have multiple reports reading and clearing this metric
+			count := float64(metric.Clear().Count())
 			if cfg.Filter.ShouldReport(name, count) {
 				datum := aDatum(name)
 				datum.Unit = aws.String(cloudwatch.StandardUnitCount)
@@ -97,9 +99,8 @@ func metricsData(cfg *config.Config) []*cloudwatch.MetricDatum {
 				data = append(data, datum)
 				countersOut += 1
 			}
-			if cfg.ResetCountersOnReport {
-				metric.Dec(metric.Count()) // GaugeCounter doesn't have Clear()
-			}
+			// We don't clear gauge counters on ResetCountersOnReport because they cannot recover their value like normal gauges
+			// They can only increment and decrement and so cannot be cleared after they are created.
 		case metrics.Gauge:
 			gagues += 1
 			value := float64(metric.Value())
