@@ -123,7 +123,7 @@ func metricsData(cfg *config.Config) []*cloudwatch.MetricDatum {
 			}
 		case metrics.Histogram:
 			histos += 1
-			h := metric.Snapshot()
+			h := metric.Clear() // For the LD flavor of go-metrics we do an atomic snapshot and clear
 			value := float64(h.Count())
 			if cfg.Filter.ShouldReport(name, value) {
 				for _, p := range cfg.Filter.Percentiles(name) {
@@ -158,7 +158,7 @@ func metricsData(cfg *config.Config) []*cloudwatch.MetricDatum {
 			}
 		case metrics.Timer:
 			timers += 1
-			t := metric.Snapshot()
+			t := metric.Clear() // For the LD flavor of go-metrics we do an atomic snapshot and clear
 			if t.Count() == 0 {
 				return
 			}
