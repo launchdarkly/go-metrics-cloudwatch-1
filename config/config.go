@@ -4,13 +4,14 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
+
 	"github.com/launchdarkly/go-metrics"
 )
 
 const (
 	Perc50  = float64(0.50)
-	Perc75  = float64(0.50)
-	Perc95  = float64(0.50)
+	Perc75  = float64(0.75)
+	Perc95  = float64(0.95)
 	Perc99  = float64(0.99)
 	Perc999 = float64(0.999)
 	Perc100 = float64(1)
