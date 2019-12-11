@@ -22,13 +22,13 @@ type PutMetricsClient interface {
 }
 
 type Config struct {
-	Filter                Filter
-	Client                PutMetricsClient
-	ReportingInterval     time.Duration
-	Registry              metrics.Registry
-	Namespace             string
-	StaticDimensions      map[string]string
-	ResetCountersOnReport bool
+	Filter            Filter
+	Client            PutMetricsClient
+	ReportingInterval time.Duration
+	Registry          metrics.Registry
+	Namespace         string
+	StaticDimensions  map[string]string
+	DurationUnit      time.Duration
 }
 
 type Filter interface {

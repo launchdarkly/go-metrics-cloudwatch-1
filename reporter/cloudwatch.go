@@ -3,8 +3,6 @@ package reporter
 import (
 	"fmt"
 	"log"
-	"strconv"
-	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -87,9 +85,6 @@ func metricsData(cfg *config.Config) []*cloudwatch.MetricDatum {
 				data = append(data, datum)
 				countersOut += 1
 			}
-			if cfg.ResetCountersOnReport {
-				metric.Clear()
-			}
 		case metrics.GaugeCounter:
 			// treat these like Counter
 			counters += 1
@@ -101,7 +96,7 @@ func metricsData(cfg *config.Config) []*cloudwatch.MetricDatum {
 				data = append(data, datum)
 				countersOut += 1
 			}
-			// We don't clear gauge counters on ResetCountersOnReport because they cannot recover their value like normal gauges
+			// We don't clear gauge counters on reporting because they cannot recover their value like normal gauges
 			// They can only increment and decrement and so cannot be cleared after they are created.
 		case metrics.Gauge:
 			gauges += 1
@@ -142,8 +137,7 @@ func metricsData(cfg *config.Config) []*cloudwatch.MetricDatum {
 				}
 			}
 			for _, p := range cfg.Filter.Percentiles(name) {
-				percentileLabel := strings.Replace(strconv.FormatFloat(p*100.0, 'f', -1, 64), ".", "", 1)
-				pname := fmt.Sprintf("%s.%s-percentile", name, percentileLabel)
+				pname := fmt.Sprintf("%s-perc%.3f", name, p)
 				pvalue := h.Percentile(p)
 				if cfg.Filter.ShouldReport(pname, pvalue) {
 					datum := aDatum(pname)
@@ -177,11 +171,15 @@ func metricsData(cfg *config.Config) []*cloudwatch.MetricDatum {
 			}
 
 			for n, v := range map[string]float64{
-				fmt.Sprintf("%s.count", name):   float64(t.Count()),
-				fmt.Sprintf("%s.min", name):     float64(t.Min()),
-				fmt.Sprintf("%s.max", name):     float64(t.Max()),
-				fmt.Sprintf("%s.mean", name):    t.Mean(),
-				fmt.Sprintf("%s.std-dev", name): t.StdDev(),
+				fmt.Sprintf("%s.count", name):          float64(t.Count()),
+				fmt.Sprintf("%s.rate-mean", name):      t.RateMean(),
+				fmt.Sprintf("%s.one-minute", name):     t.Rate1(),
+				fmt.Sprintf("%s.five-minute", name):    t.Rate5(),
+				fmt.Sprintf("%s.fifteen-minute", name): t.Rate15(),
+				fmt.Sprintf("%s.min", name):            float64(t.Min() / int64(cfg.DurationUnit)),
+				fmt.Sprintf("%s.max", name):            float64(t.Max() / int64(cfg.DurationUnit)),
+				fmt.Sprintf("%s.mean", name):           t.Mean() / float64(cfg.DurationUnit),
+				fmt.Sprintf("%s.std-dev", name):        t.StdDev() / float64(cfg.DurationUnit),
 			} {
 				if cfg.Filter.ShouldReport(n, v) {
 					datum := aDatum(n)
@@ -190,9 +188,9 @@ func metricsData(cfg *config.Config) []*cloudwatch.MetricDatum {
 					timersOut += 1
 				}
 			}
+
 			for _, p := range cfg.Filter.Percentiles(name) {
-				percentileLabel := strings.Replace(strconv.FormatFloat(p*100.0, 'f', -1, 64), ".", "", 1)
-				pname := fmt.Sprintf("%s.%s-percentile", name, percentileLabel)
+				pname := fmt.Sprintf("%s-perc%.3f", name, p)
 				pvalue := t.Percentile(p)
 				if cfg.Filter.ShouldReport(pname, pvalue) {
 					datum := aDatum(pname)
