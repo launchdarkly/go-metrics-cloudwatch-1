@@ -26,9 +26,10 @@ func TestCloudwatchReporter(t *testing.T) {
 	mock := &MockPutMetricsClient{}
 	registry := metrics.NewRegistry()
 	cfg := &config.Config{
-		Client:   mock,
-		Filter:   &config.NoFilter{},
-		Registry: registry,
+		Client:       mock,
+		Filter:       &config.NoFilter{},
+		Registry:     registry,
+		DurationUnit: time.Millisecond,
 	}
 
 	for i := 0; i < 30; i++ {
@@ -47,9 +48,10 @@ func TestCounters(t *testing.T) {
 	mock := &MockPutMetricsClient{}
 	registry := metrics.NewRegistry()
 	cfg := &config.Config{
-		Client:   mock,
-		Filter:   &config.NoFilter{},
-		Registry: registry,
+		Client:       mock,
+		Filter:       &config.NoFilter{},
+		Registry:     registry,
+		DurationUnit: time.Millisecond,
 	}
 	counter := metrics.GetOrRegisterCounter(fmt.Sprintf("counter"), registry)
 	counter.Inc(1)
@@ -67,9 +69,10 @@ func TestGaugeCounters(t *testing.T) {
 	mock := &MockPutMetricsClient{}
 	registry := metrics.NewRegistry()
 	cfg := &config.Config{
-		Client:   mock,
-		Filter:   &config.NoFilter{},
-		Registry: registry,
+		Client:       mock,
+		Filter:       &config.NoFilter{},
+		Registry:     registry,
+		DurationUnit: time.Millisecond,
 	}
 	gaugeCounter := metrics.GetOrRegisterGaugeCounter(fmt.Sprintf("gauge-counter"), registry)
 	gaugeCounter.Dec(1)
@@ -85,9 +88,10 @@ func TestHistograms(t *testing.T) {
 	registry := metrics.NewRegistry()
 	filter := &config.NoFilter{}
 	cfg := &config.Config{
-		Client:   mock,
-		Filter:   filter,
-		Registry: registry,
+		Client:       mock,
+		Filter:       filter,
+		Registry:     registry,
+		DurationUnit: time.Millisecond,
 	}
 
 	hist := metrics.GetOrRegisterHistogram(fmt.Sprintf("histo"), registry, metrics.NewUniformSample(1024))
@@ -104,9 +108,10 @@ func TestTimers(t *testing.T) {
 	mock := &MockPutMetricsClient{}
 	registry := metrics.NewRegistry()
 	cfg := &config.Config{
-		Client:   mock,
-		Filter:   &config.NoFilter{},
-		Registry: registry,
+		Client:       mock,
+		Filter:       &config.NoFilter{},
+		Registry:     registry,
+		DurationUnit: time.Millisecond,
 	}
 	timer := metrics.GetOrRegisterTimer(fmt.Sprintf("timer"), registry)
 	timer.Update(10 * time.Second)
@@ -121,9 +126,10 @@ func TestFilters(t *testing.T) {
 	mock := &MockPutMetricsClient{}
 	registry := metrics.NewRegistry()
 	cfg := &config.Config{
-		Client:   mock,
-		Filter:   &config.AllFilter{},
-		Registry: registry,
+		Client:       mock,
+		Filter:       &config.AllFilter{},
+		Registry:     registry,
+		DurationUnit: time.Millisecond,
 	}
 
 	timer := metrics.GetOrRegisterTimer(fmt.Sprintf("timer"), registry)
