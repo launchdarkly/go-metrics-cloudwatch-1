@@ -194,7 +194,7 @@ func metricsData(cfg *config.Config) []*cloudwatch.MetricDatum {
 				pvalue := t.Percentile(p)
 				if cfg.Filter.ShouldReport(pname, pvalue) {
 					datum := aDatum(pname)
-					datum.Value = aws.Float64(pvalue)
+					datum.Value = aws.Float64(pvalue / float64(cfg.DurationUnit))
 					data = append(data, datum)
 					timersOut += 1
 				}
