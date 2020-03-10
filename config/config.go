@@ -29,6 +29,8 @@ type Config struct {
 	Namespace         string
 	StaticDimensions  map[string]string
 	DurationUnit      time.Duration
+
+	PreviousCounterValues map[string]int64 // when provided, we store previous counters here and use them to compute diffs instead of clearing counters
 }
 
 type Filter interface {

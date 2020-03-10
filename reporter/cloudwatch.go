@@ -77,7 +77,14 @@ func metricsData(cfg *config.Config) []*cloudwatch.MetricDatum {
 			counters += 1
 			// For the LD flavor of go-metrics we do an atomic snapshot and clear
 			// Caveat: we cannot have multiple reports reading and clearing this metric
-			count := float64(metric.Clear().Count())
+			var count float64
+			if cfg.PreviousCounterValues != nil {
+				current := metric.Count()
+				count = float64(current - cfg.PreviousCounterValues[name])
+				cfg.PreviousCounterValues[name] = current
+			} else {
+				count = float64(metric.Clear().Count())
+			}
 			if cfg.Filter.ShouldReport(name, count) {
 				datum := aDatum(name)
 				datum.Unit = aws.String(cloudwatch.StandardUnitCount)
