@@ -65,6 +65,36 @@ func TestCounters(t *testing.T) {
 	}
 }
 
+
+func TestCountersWithPreviousValueSnapshots(t *testing.T) {
+	mock := &MockPutMetricsClient{}
+	registry := metrics.NewRegistry()
+	cfg := &config.Config{
+		Client:       mock,
+		Filter:       &config.NoFilter{},
+		Registry:     registry,
+		DurationUnit: time.Millisecond,
+
+		PreviousCounterValues: make(map[string]int64),
+	}
+	counter := metrics.GetOrRegisterCounter(fmt.Sprintf("counter"), registry)
+	counter.Inc(2)
+	EmitMetrics(cfg)
+	if expected, actual := int64(2), counter.Count(); expected != actual {
+		t.Fatalf("expected counter to be %d but got %d", expected, actual)
+	}
+
+	counter.Inc(1)
+	EmitMetrics(cfg)
+	if expected, actual := int64(3), counter.Count(); expected != actual {
+		t.Fatalf("expected counter to be %d but got %d", expected, actual)
+	}
+	if expected, actual := 2, mock.metricsPut; expected != mock.metricsPut {
+		t.Fatalf("Expected to put %d but put %d", expected, actual)
+	}
+}
+
+
 func TestGaugeCounters(t *testing.T) {
 	mock := &MockPutMetricsClient{}
 	registry := metrics.NewRegistry()
